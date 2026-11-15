@@ -46,3 +46,16 @@ def test_missing_return_is_penalized():
     )
     assert risk["score"] < 100
     assert any("Return" in r or "return" in r for r in risk["reasons"])
+
+
+def test_detected_issue_with_unchanged_code_is_escalated():
+    code = "# TODO: clarify expected behavior\n"
+    risk = assess_risk(
+        original_code=code,
+        fixed_code=code,
+        issues=[{"type": "Maintainability", "severity": "Medium", "msg": "TODO"}],
+    )
+
+    assert risk["level"] == "medium"
+    assert risk["should_autofix"] is False
+    assert any("No changes were proposed" in reason for reason in risk["reasons"])

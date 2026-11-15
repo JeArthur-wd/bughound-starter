@@ -46,6 +46,10 @@ def assess_risk(
             score -= 5
             reasons.append("Low severity issue detected.")
 
+    if issues and original_code.strip() == fixed_code.strip():
+        score -= 20
+        reasons.append("No changes were proposed despite detected issues.")
+
     # ----------------------------
     # Structural change checks
     # ----------------------------
@@ -80,7 +84,10 @@ def assess_risk(
     # ----------------------------
     # Auto-fix policy
     # ----------------------------
-    should_autofix = level == "low"
+    autofix_score_threshold = 90
+    should_autofix = score >= autofix_score_threshold
+    if not should_autofix and level == "low":
+        reasons.append(f"Score is below the auto-fix threshold ({autofix_score_threshold}).")
 
     if not reasons:
         reasons.append("No significant risks detected.")
